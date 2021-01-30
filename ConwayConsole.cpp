@@ -3,25 +3,66 @@
 
 #include <iostream>
 #include <vector>
-#include "Cell.h"
 
 //DEFINE VARIABLES AND STRUCTS
 typedef struct Cell {
     bool alive;
-    std::vector<struct Cell> neightbors[8];
+    unsigned int alive_neighbors;
 } cell_t;
 
+unsigned int num_rows = 10;
+unsigned int num_cols = 10;
 
+std::vector<std::vector<cell_t>> field(num_rows, std::vector<cell_t>(num_cols));
 
 //DEFINE FUNCTIONS
-void print_field(std::vector<std::vector<cell_t>> &field, unsigned int rows, unsigned int cols);
+void print_field(unsigned int rows, unsigned int cols);
 
-int main()
-{
-    unsigned int num_rows = 10;
-    unsigned int num_cols = 10;
+void count_neighbors(cell_t &cell, unsigned int x, unsigned int y) {
+    unsigned int count = 0;
+    for (int i = x-1; i <= x+1; i++) {
+        for (int j = y-1; j <= y+1; j++) {
+            if (i == x && j == y)
+                continue;
 
-    std::vector<std::vector<cell_t>> field(num_rows, std::vector<cell_t>(num_cols));
+            if (i > -1 && j > -1 && i < num_rows && j < num_cols) {
+                if (field[i][j].alive) {
+                    count++;
+                }
+            }          
+        }
+    }
+    cell.alive_neighbors = count;
+}
+
+void update_neighbor_count() {
+    for (int i = 0; i < num_rows; i++) {
+        for (int j = 0; j < num_cols; j++) {
+            count_neighbors(field[i][j], i, j);
+        }
+    }
+}
+ 
+void update_field() {
+    
+
+    for (int i = 0; i < num_rows; i++) {
+        for (int j = 0; j < num_cols; j++) {
+            if ((field[i][j].alive_neighbors == 2 || field[i][j].alive_neighbors == 3) && field[i][j].alive == true) {//Any live cell with two or three live neighbours survives.
+                field[i][j].alive = true;
+            }
+            else if (field[i][j].alive == false && field[i][j].alive_neighbors == 3) {//Any dead cell with three live neighbours becomes a live cell.
+                field[i][j].alive = true;
+            }
+            else {
+                field[i][j].alive = false;
+            }
+        }
+    }
+    update_neighbor_count();
+}
+
+void init_vector() {
 
     for (int i = 0; i < num_rows; i++) {
         for (int j = 0; j < num_cols; j++) {
@@ -29,22 +70,30 @@ int main()
             field[i][j] = new_cell;
         }
     }
+    field[num_rows / 2][num_cols / 2].alive = true;
+    update_neighbor_count();
+}
 
-    print_field(field, num_rows, num_cols);
-    
+int main()
+{
+    init_vector();
+
+
+    print_field(num_rows, num_cols);
+
     return 0;
 
 }
 
 
 //FUNTION IMPLENTATION
-void print_field(std::vector<std::vector<cell_t>>& vec, unsigned int rows, unsigned int cols) {
+void print_field(unsigned int rows, unsigned int cols) {
     for (unsigned int i = 0; i < rows; ++i) {
         for (unsigned int j = 0; j < cols; ++j) {
-            if (vec[i][j].alive)
-                std::cout << 'X';
+            if (field[i][j].alive)
+                std::cout << (char)254;
             else
-                std::cout << '.';
+                std::cout << field[i][j].alive_neighbors;
         }
         std::cout << std::endl;
     }
