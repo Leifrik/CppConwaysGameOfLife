@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
-
+#include <chrono>
+#include <thread>
 //DEFINE VARIABLES AND STRUCTS
 typedef struct Cell {
     bool alive;
@@ -35,6 +36,8 @@ void spawn_glider(unsigned int x, unsigned int y);
 
 void run(char user_input, bool& running);
 
+void run_thousand_times();
+
 int main()
 {
     init_vector();
@@ -43,8 +46,7 @@ int main()
     char user_input;
     while (running) {
         std::cin >> user_input;
-        run(user_input, running);
-        
+        run(user_input, running);     
     }
 
     return 0;
@@ -118,7 +120,7 @@ void init_vector() {
             field[i][j] = new_cell;
         }
     }
-    spawn_toad(5,5);
+    spawn_glider(1,1);
     update_neighbor_count();
 }
 
@@ -161,6 +163,16 @@ void spawn_glider(unsigned int x, unsigned int y) {
 
 }
 
+void run_thounsand_times() {
+    unsigned int i = 0;
+    while (i < 1000) {
+        update_field();
+        system("CLS");
+        print_field(num_cols, num_rows);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 30));
+        i++;
+    }
+}
 
 //USER INTERACTION
 void run(char user_input, bool& running) {
@@ -168,6 +180,9 @@ void run(char user_input, bool& running) {
     {
     case 'n':
         update_field();
+        break;
+    case 's':
+        run_thounsand_times();
         break;
     default:
         running = false;
