@@ -7,13 +7,13 @@ typedef struct Cell {
     unsigned int alive_neighbors;
 } cell_t;
 
-unsigned int num_rows = 10;
+unsigned int num_rows = 30;
 unsigned int num_cols = 10;
 
-std::vector<std::vector<cell_t>> field(num_rows, std::vector<cell_t>(num_cols));
+std::vector<std::vector<cell_t>> field(num_cols, std::vector<cell_t>(num_rows));
 
 //DEFINE FUNCTIONS
-void print_field(unsigned int rows, unsigned int cols);
+void print_field(unsigned int cols, unsigned int rows);
 
 void count_neighbors(cell_t& cell, unsigned int x, unsigned int y);
 
@@ -29,12 +29,16 @@ void spawn_block(unsigned int x, unsigned int y);
 
 void spawn_beacon(unsigned int x, unsigned int y);
 
+void spawn_toad(unsigned int x, unsigned int y);
+
+void spawn_glider(unsigned int x, unsigned int y);
+
 void run(char user_input, bool& running);
 
 int main()
 {
     init_vector();
-    print_field(num_rows, num_cols);
+    print_field(num_cols, num_rows);
     bool running = true;
     char user_input;
     while (running) {
@@ -49,9 +53,9 @@ int main()
 
 
 //FUNTION IMPLENTATION
-void print_field(unsigned int rows, unsigned int cols) {
-    for (unsigned int i = 0; i < rows; ++i) {
-        for (unsigned int j = 0; j < cols; ++j) {
+void print_field(unsigned int cols, unsigned int rows) {
+    for (unsigned int i = 0; i < cols; ++i) {
+        for (unsigned int j = 0; j < rows; ++j) {
             if (field[i][j].alive)
                 std::cout << (char)254;
             else
@@ -69,7 +73,7 @@ void count_neighbors(cell_t& cell, unsigned int x, unsigned int y) {
             if (i == x && j == y)
                 continue;
 
-            if (i > -1 && j > -1 && i < num_rows && j < num_cols) {
+            if (i > -1 && j > -1 && i < num_cols && j < num_rows) {
                 if (field[i][j].alive) {
                     count++;
                 }
@@ -80,8 +84,8 @@ void count_neighbors(cell_t& cell, unsigned int x, unsigned int y) {
 }
 
 void update_neighbor_count() {
-    for (int i = 0; i < num_rows; i++) {
-        for (int j = 0; j < num_cols; j++) {
+    for (int i = 0; i < num_cols; i++) {
+        for (int j = 0; j < num_rows; j++) {
             count_neighbors(field[i][j], i, j);
         }
     }
@@ -90,8 +94,8 @@ void update_neighbor_count() {
 void update_field() {
 
 
-    for (int i = 0; i < num_rows; i++) {
-        for (int j = 0; j < num_cols; j++) {
+    for (int i = 0; i < num_cols; i++) {
+        for (int j = 0; j < num_rows; j++) {
             if ((field[i][j].alive_neighbors == 2 || field[i][j].alive_neighbors == 3) && field[i][j].alive == true) {//Any live cell with two or three live neighbours survives.
                 field[i][j].alive = true;
             }
@@ -108,34 +112,53 @@ void update_field() {
 
 void init_vector() {
 
-    for (int i = 0; i < num_rows; i++) {
-        for (int j = 0; j < num_cols; j++) {
+    for (int i = 0; i < num_cols; i++) {
+        for (int j = 0; j < num_rows; j++) {
             cell_t new_cell = { false };
             field[i][j] = new_cell;
         }
     }
-    spawn_beacon((num_rows / 2), (num_cols / 2));
+    spawn_toad(5,5);
     update_neighbor_count();
 }
 
 //SPAWN SHAPES
 
 void spawn_blinker(unsigned int x, unsigned int y) {
-    field[x - 1][y].alive = true;
-    field[x][y].alive = true;
-    field[x + 1][y].alive = true;
+    field[y][x - 1].alive = true;
+    field[y][x].alive = true;
+    field[y][x + 1].alive = true;
 }
 
 void spawn_block(unsigned int x, unsigned int y) {
-    field[x][y].alive = true;
-    field[x][y + 1].alive = true;
-    field[x + 1][y].alive = true;
-    field[x + 1][y + 1].alive = true;
+    field[y][x].alive = true;
+    field[y + 1][x].alive = true;
+    field[y][x + 1].alive = true;
+    field[y + 1][x + 1].alive = true;
 }
 
 void spawn_beacon(unsigned int x, unsigned int y) {
     spawn_block(x, y);
     spawn_block(x + 2, y + 2);
+}
+
+void spawn_toad(unsigned int x, unsigned int y) {
+    field[y][x + 1].alive = true;
+    field[y][x + 2].alive = true;
+    field[y][x + 3].alive = true;
+
+    field[y + 1][x].alive = true;
+    field[y + 1][x + 1].alive = true;
+    field[y + 1][x + 2].alive = true;
+}
+
+void spawn_glider(unsigned int x, unsigned int y) {
+    field[y][x + 2].alive = true;
+    field[y + 1][x].alive = true;
+    field[y + 1][x + 2].alive = true;
+    field[y + 2][x + 1].alive = true;
+    field[y + 2][x + 2].alive = true;
+
 }
 
 
@@ -151,5 +174,5 @@ void run(char user_input, bool& running) {
         break;
     }
     system("CLS");
-    print_field(num_rows, num_cols);
+    print_field(num_cols, num_rows);
 }
